@@ -2,4 +2,4 @@
 
 Just a basic Wordle clone
 
-Try it on (GitHub Pages)[https://edlinkiii.github.io/word-a-be/]
+Try it on [GitHub Pages](https://edlinkiii.github.io/word-a-be/)
