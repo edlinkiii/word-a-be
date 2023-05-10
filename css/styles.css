@@ -77,6 +77,8 @@ main {
     text-align: center;
 }
 .reveal.padded {
+    border: 2px solid var(--foreground);
+    border-radius: 0.5rem;
     padding: 1rem;
 }
 
