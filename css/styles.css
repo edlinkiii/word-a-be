@@ -79,6 +79,7 @@ main {
     border: 1px solid var(--foreground);
     color: var(--foreground) !important;
     text-align: center;
+
     &.padded {
         border: 2px solid var(--foreground);
         border-radius: 0.5rem;
@@ -103,7 +104,7 @@ main {
     justify-content: center;
     align-items: center;
     font-size: 1rem;
-    width: 1.875rem;
+    width: 1.5rem;
     height: 1.875rem;
     margin: 2px;
     border-radius: 0.25rem;
@@ -114,7 +115,7 @@ main {
     &[value="Enter"],
     &[value="Backspace"] {
         font-size: 1.5rem;
-        width: 3rem;
+        width: 2.25rem;
     }
 }
 
