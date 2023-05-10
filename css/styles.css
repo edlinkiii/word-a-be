@@ -58,32 +58,32 @@ main {
     width: 100%;
     height: 56px;
 }
+
+.b,
+.y,
+.g {
+    color: var(--foreground) !important;
+}
+
 .b {
     background-color: #333333 !important;
-    color: var(--foreground) !important;
 }
 .y {
     background-color: #d6b81f !important;
-    color: var(--foreground) !important;
 }
 .g {
     background-color: #399d39 !important;
-    color: var(--foreground) !important;
 }
 
 .reveal {
     border: 1px solid var(--foreground);
     color: var(--foreground) !important;
     text-align: center;
-}
-.reveal.padded {
-    border: 2px solid var(--foreground);
-    border-radius: 0.5rem;
-    padding: 1rem;
-}
-
-.debug {
-    outline: 3px red solid;
+    &.padded {
+        border: 2px solid var(--foreground);
+        border-radius: 0.5rem;
+        padding: 1rem;
+    }
 }
 
 .keyboard {
@@ -103,24 +103,21 @@ main {
     justify-content: center;
     align-items: center;
     font-size: 1rem;
-    width: 2rem;
-    height: 2rem;
+    width: 1.875rem;
+    height: 1.875rem;
     margin: 2px;
-    border-radius: 1rem;
+    border-radius: 0.25rem;
     background-color: var(--foreground);
     border: 2px solid var(--foreground);
     color: var(--background);
+
+    &[value="Enter"],
+    &[value="Backspace"] {
+        font-size: 1.5rem;
+        width: 3rem;
+    }
 }
 
-button[value="Enter"],
-button[value="Backspace"] {
-    font-size: 1.5rem;
-}
-
-button[value="Enter"] {
-    width: 3rem;
-}
-
-button[value="Backspace"] {
-    width: 3rem;
+.debug {
+    outline: 3px red solid;
 }
