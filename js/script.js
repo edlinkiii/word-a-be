@@ -12,7 +12,7 @@ const LETTER_WRONG = "y";
 const LETTER_CORRECT = "g";
 const WORD_UNUSED = Array(WORD_LENGTH).fill(LETTER_UNUSED).join("");
 const WORD_CORRECT = Array(WORD_LENGTH).fill(LETTER_CORRECT).join("");
-const WORD_API_URL = `https://random-word-api.herokuapp.com/word?length=${WORD_LENGTH}&lang=en`;
+const WORD_API_URL = `https://random-word-api.vercel.app/api?words=1&length=${WORD_LENGTH}&type=uppercase`;
 const KEYBOARD_BUTTONS = [
     [
         ["Q", "Q"],
