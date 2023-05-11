@@ -1,6 +1,9 @@
 :root {
     --foreground: #fbf7d0;
     --background: #004366;
+    --bg-color-b: #333333;
+    --bg-color-y: #d6b81f;
+    --bg-color-g: #399d39;
 }
 * {
     box-sizing: border-box;
@@ -66,13 +69,13 @@ main {
 }
 
 .b {
-    background-color: #333333 !important;
+    background-color: var(--bg-color-b) !important;
 }
 .y {
-    background-color: #d6b81f !important;
+    background-color: var(--bg-color-y) !important;
 }
 .g {
-    background-color: #399d39 !important;
+    background-color: var(--bg-color-g) !important;
 }
 
 .reveal {
@@ -116,4 +119,10 @@ main {
 .key[value="Backspace"] {
     font-size: 1.5rem;
     width: 2.25rem;
+}
+
+.key:disabled,
+.key[disabled] {
+    background-color: var(--bg-color-b) !important;
+    color: var(--foreground) !important;
 }

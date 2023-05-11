@@ -13,6 +13,7 @@ const LETTER_CORRECT = "g";
 const WORD_UNUSED = Array(WORD_LENGTH).fill(LETTER_UNUSED).join("");
 const WORD_CORRECT = Array(WORD_LENGTH).fill(LETTER_CORRECT).join("");
 const WORD_API_URL = `https://random-word-api.vercel.app/api?words=1&length=${WORD_LENGTH}&type=uppercase`;
+const DICTIONARY_API_URL = `https://api.dictionaryapi.dev/api/v2/entries/en/`
 const KEYBOARD_BUTTONS = [
     [
         ["Q", "Q"],
@@ -125,8 +126,7 @@ function testWord() {
     });
 }
 
-function processInput(key) {
-    // console.log(key)
+async function processInput(key) {
     if (key === KEY_BACKSPACE) {
         if (input.length > 0) {
             input = input.slice(0, -1);
@@ -144,7 +144,25 @@ function processInput(key) {
         input += key.toUpperCase();
     }
 
+    const enterKey = $q(".key[value='Enter']");
+    if(input.length === WORD_LENGTH) {
+        const isRealWord = await checkWord(input);
+
+        isRealWord
+            ? enterKey.removeAttribute("disabled")
+            : enterKey.setAttribute("disabled", true);
+
+    } else {
+        enterKey.setAttribute("disabled", true);
+    }
+
     displayInput(input);
+}
+
+function checkWord(word) {
+    return fetch(`${DICTIONARY_API_URL}${word}`)
+        .then((resp) => resp.json())
+        .then(({title}) => !(title && title === "No Definitions Found"));
 }
 
 function displayInput(input) {
@@ -224,6 +242,7 @@ function buildKeyboard() {
             const button = buttonClone.querySelector(".key");
             button.value = val;
             button.innerHTML = txt;
+            val === "Enter" && button.setAttribute("disabled", true);
             row.appendChild(buttonClone);
         }
         keyboardContainer.appendChild(rowClone);
