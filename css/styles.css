@@ -126,3 +126,29 @@ main {
     background-color: var(--bg-color-b) !important;
     color: var(--foreground) !important;
 }
+
+.shake {
+    animation: shake 0.25s alternate 2;
+}
+
+@keyframes shake {
+    0% {
+        transform: translate3d(-10px, 0, 0);
+    }
+    25% {
+        transform: translate3d(10px, 0, 0);
+    }
+    50% {
+        transform: translate3d(-10px, 0, 0);
+    }
+    75% {
+        transform: translate3d(10px, 0, 0);
+    }
+    100% {
+        transform: translate3d(-10px, 0, 0);
+    }
+}
+
+.debug {
+    outline: 3px solid red;
+}

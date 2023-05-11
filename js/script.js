@@ -144,13 +144,17 @@ async function processInput(key) {
         input += key.toUpperCase();
     }
 
+    const inputContainer = $q(".input-container");
     const enterKey = $q(".key[value='Enter']");
     if(input.length === WORD_LENGTH) {
         const isRealWord = await checkWord(input);
 
-        isRealWord
-            ? enterKey.removeAttribute("disabled")
-            : enterKey.setAttribute("disabled", true);
+        if(isRealWord) {
+            enterKey.removeAttribute("disabled")
+        } else {
+            shakeNo(".input-container");
+            enterKey.setAttribute("disabled", true);
+        }
 
     } else {
         enterKey.setAttribute("disabled", true);
@@ -247,4 +251,12 @@ function buildKeyboard() {
         }
         keyboardContainer.appendChild(rowClone);
     }
+}
+
+function shakeNo(selector) {
+    const element = $q(selector);
+    const SHAKE_CLASS = "shake";
+
+    element.classList.add(SHAKE_CLASS);
+    setTimeout(() => element.classList.remove(SHAKE_CLASS),1000);
 }
