@@ -79,12 +79,11 @@ main {
     border: 1px solid var(--foreground);
     color: var(--foreground) !important;
     text-align: center;
-
-    &.padded {
-        border: 2px solid var(--foreground);
-        border-radius: 0.5rem;
-        padding: 1rem;
-    }
+}
+.reveal.padded {
+    border: 2px solid var(--foreground);
+    border-radius: 0.5rem;
+    padding: 1rem;
 }
 
 .keyboard {
@@ -111,14 +110,10 @@ main {
     background-color: var(--foreground);
     border: 2px solid var(--foreground);
     color: var(--background);
-
-    &[value="Enter"],
-    &[value="Backspace"] {
-        font-size: 1.5rem;
-        width: 2.25rem;
-    }
 }
 
-.debug {
-    outline: 3px red solid;
+.key[value="Enter"],
+.key[value="Backspace"] {
+    font-size: 1.5rem;
+    width: 2.25rem;
 }
