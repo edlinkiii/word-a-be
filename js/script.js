@@ -50,7 +50,7 @@ const KEYBOARD_BUTTONS = [
         ["M", "M"],
     ],
 ];
-const INPUT_HINTS = true;
+const INPUT_HINTS = false;
 
 buildAttemptGrid();
 buildInputGrid();
