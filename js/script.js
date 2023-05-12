@@ -100,7 +100,7 @@ const checkAnswer = ((answerPromise) => {
         }
         return result;
     };
-})(testWord()); // getWord()
+})(getWord()); // testWord()
 
 // physical keyboard input listener
 window.addEventListener("keydown", (evt) => {
