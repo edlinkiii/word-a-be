@@ -50,6 +50,7 @@ const KEYBOARD_BUTTONS = [
         ["M", "M"],
     ],
 ];
+const INPUT_HINTS = true;
 
 buildAttemptGrid();
 buildInputGrid();
@@ -62,6 +63,7 @@ const isAlpha = (input) => /^[a-zA-Z]$/.test(input);
 const attempts = [];
 let winner = false;
 let input = "";
+let isRealWord = false;
 
 const checkAnswer = ((answerPromise) => {
     return async (attempts, newAttempt) => {
@@ -76,6 +78,7 @@ const checkAnswer = ((answerPromise) => {
         [...attempts[newAttempt]].forEach((_, i) => {
             if (answer[i] === attempts[newAttempt][i]) {
                 result = result.slice(0, i) + LETTER_CORRECT + result.slice(i + 1);
+                inputOutputs[i].dataset["hint"] = answer[i];
                 counts[attempts[newAttempt][i]] -= 1;
             }
         });
@@ -92,10 +95,12 @@ const checkAnswer = ((answerPromise) => {
         if (result === WORD_CORRECT || newAttempt === LAST_ATTEMP) {
             winner = result === WORD_CORRECT;
             revealAnswer(answer);
+        } else {
+          displayInput(input);
         }
         return result;
     };
-})(getWord()); // testWord()
+})(testWord()); // getWord()
 
 // physical keyboard input listener
 window.addEventListener("keydown", (evt) => {
@@ -132,7 +137,7 @@ async function processInput(key) {
             input = input.slice(0, -1);
         }
     } else if (key === KEY_ENTER) {
-        if (input.length === WORD_LENGTH) {
+        if (input.length === WORD_LENGTH && isRealWord) {
             attempts.push(input);
             input = "";
             inputOutputs.forEach((i) => {
@@ -147,16 +152,18 @@ async function processInput(key) {
     const inputContainer = $q(".input-container");
     const enterKey = $q(".key[value='Enter']");
     if(input.length === WORD_LENGTH) {
-        const isRealWord = await checkWord(input);
+        isRealWord = await checkWord(input);
 
         if(isRealWord) {
             enterKey.removeAttribute("disabled")
         } else {
-            shakeNo(".input-container");
+            inputContainer.classList.add("shake");
+            setTimeout(() => inputContainer.classList.remove("shake"),1000);
             enterKey.setAttribute("disabled", true);
         }
 
     } else {
+        isRealWord = false;
         enterKey.setAttribute("disabled", true);
     }
 
@@ -171,7 +178,14 @@ function checkWord(word) {
 
 function displayInput(input) {
     for (let i = 0; i < WORD_LENGTH; i++) {
-        inputOutputs[i].innerText = input[i] || "";
+        const inputOutput = inputOutputs[i];
+        const hint = inputOutput.dataset.hint;
+        const defaultInput = INPUT_HINTS && hint ? `<span class="hint">${hint}</span>` : "";
+        inputOutput.innerHTML = input[i] || defaultInput;
+        input[i] && hint && inputOutput.innerHTML === hint
+            ? inputOutput.classList.add("g")
+            : inputOutput.classList.remove("g")
+        ;
     }
 }
 
@@ -251,12 +265,4 @@ function buildKeyboard() {
         }
         keyboardContainer.appendChild(rowClone);
     }
-}
-
-function shakeNo(selector) {
-    const element = $q(selector);
-    const SHAKE_CLASS = "shake";
-
-    element.classList.add(SHAKE_CLASS);
-    setTimeout(() => element.classList.remove(SHAKE_CLASS),1000);
 }
