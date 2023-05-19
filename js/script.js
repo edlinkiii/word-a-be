@@ -13,7 +13,7 @@ const LETTER_CORRECT = "g";
 const WORD_UNUSED = Array(WORD_LENGTH).fill(LETTER_UNUSED).join("");
 const WORD_CORRECT = Array(WORD_LENGTH).fill(LETTER_CORRECT).join("");
 const WORD_API_URL = `https://random-word-api.vercel.app/api?words=1&length=${WORD_LENGTH}&type=uppercase`;
-const DICTIONARY_API_URL = `https://api.dictionaryapi.dev/api/v2/entries/en/`
+const DICTIONARY_API_URL = `https://api.dictionaryapi.dev/api/v2/entries/en/`;
 const KEYBOARD_BUTTONS = [
     [
         ["Q", "Q"],
@@ -26,7 +26,6 @@ const KEYBOARD_BUTTONS = [
         ["I", "I"],
         ["O", "O"],
         ["P", "P"],
-        ["Backspace", "&lArr;"],
     ],
     [
         ["A", "A"],
@@ -38,9 +37,9 @@ const KEYBOARD_BUTTONS = [
         ["J", "J"],
         ["K", "K"],
         ["L", "L"],
-        ["Enter", "&crarr;"],
     ],
     [
+        ["Enter", "&crarr;"],
         ["Z", "Z"],
         ["X", "X"],
         ["C", "C"],
@@ -48,17 +47,18 @@ const KEYBOARD_BUTTONS = [
         ["B", "B"],
         ["N", "N"],
         ["M", "M"],
+        ["Backspace", "&lArr;"],
     ],
 ];
-const INPUT_HINTS = false;
+const INPUT_HINTS = false; // future setting
+
+const isAlpha = (input) => /^[a-zA-Z]$/.test(input);
+const attemptContainer = $q("#attempt-container");
+const revealContainer = $q("#reveal");
+const keyboardContainer = $q("#keyboard");
 
 buildAttemptGrid();
-buildInputGrid();
 buildKeyboard();
-
-const attemptOutputs = $qa(".grid-container .grid-item");
-const inputOutputs = $qa(".input-container .grid-item");
-const isAlpha = (input) => /^[a-zA-Z]$/.test(input);
 
 const attempts = [];
 let winner = false;
@@ -66,57 +66,43 @@ let input = "";
 let isRealWord = false;
 
 const checkAnswer = ((answerPromise) => {
-    return async (attempts, newAttempt) => {
+    return async (attempt) => {
         const answer = await answerPromise;
         const counts = {};
         let result = WORD_UNUSED;
-        [...answer].forEach((_, i) => {
-            if (counts[_]) counts[_] += 1;
-            else counts[_] = 1;
+        [...answer].forEach((letter) => {
+            if (counts[letter]) counts[letter] += 1;
+            else counts[letter] = 1;
         });
-        // console.log(counts);
-        [...attempts[newAttempt]].forEach((_, i) => {
-            if (answer[i] === attempts[newAttempt][i]) {
+        [...attempt].forEach((_, i) => {
+            if (answer[i] === attempt[i]) {
                 result = result.slice(0, i) + LETTER_CORRECT + result.slice(i + 1);
-                inputOutputs[i].dataset["hint"] = answer[i];
-                counts[attempts[newAttempt][i]] -= 1;
+                // inputOutputs[i].dataset["hint"] = answer[i];
+                counts[attempt[i]] -= 1;
             }
         });
-        [...attempts[newAttempt]].forEach((_, i) => {
-            if (
-                answer.includes(attempts[newAttempt][i]) &&
-                counts[attempts[newAttempt][i]] > 0 &&
-                result[i] !== LETTER_CORRECT
-            ) {
+        [...attempt].forEach((_, i) => {
+            if (answer.includes(attempt[i]) && counts[attempt[i]] > 0 && result[i] !== LETTER_CORRECT) {
                 result = result.slice(0, i) + LETTER_WRONG + result.slice(i + 1);
-                counts[attempts[newAttempt][i]] -= 1;
+                counts[attempt[i]] -= 1;
             }
         });
-        if (result === WORD_CORRECT || newAttempt === LAST_ATTEMP) {
-            winner = result === WORD_CORRECT;
+
+        const inputRow = attemptContainer.querySelector(".input-row");
+        const attemptLetters = inputRow.querySelectorAll(".attempt-letter");
+        attemptLetters.forEach((attemptLetter, i) => {
+            attemptLetter.classList.add(result[i]);
+        });
+
+        const nextRow = inputRow.nextElementSibling;
+
+        if (result !== WORD_CORRECT && !nextRow) {
             revealAnswer(answer);
-        } else {
-          displayInput(input);
         }
+
         return result;
     };
-})(getWord()); // testWord()
-
-// physical keyboard input listener
-window.addEventListener("keydown", (evt) => {
-    evt.preventDefault();
-    if (attempts.length === MAX_ATTEMPTS || winner === true) return;
-    processInput(evt.key);
-});
-
-// virtual keyboard input listener
-$qa(".keyboard button.key").forEach((key) => {
-    key.addEventListener("click", (evt) => {
-        evt.preventDefault();
-        if (attempts.length === MAX_ATTEMPTS || winner === true) return;
-        processInput(evt.target.value);
-    });
-});
+})(testWord()); // getWord()
 
 async function getWord() {
     const res = await fetch(WORD_API_URL);
@@ -131,6 +117,22 @@ function testWord() {
     });
 }
 
+// physical keyboard input listener
+window.addEventListener("keydown", (evt) => {
+    evt.preventDefault();
+    if (attempts.length === MAX_ATTEMPTS || winner === true) return;
+    processInput(evt.key);
+});
+
+// virtual keyboard input listener
+keyboardContainer.querySelectorAll("button.key").forEach((key) => {
+    key.addEventListener("click", (evt) => {
+        evt.preventDefault();
+        if (attempts.length === MAX_ATTEMPTS || winner === true) return;
+        processInput(evt.target.value);
+    });
+});
+
 async function processInput(key) {
     if (key === KEY_BACKSPACE) {
         if (input.length > 0) {
@@ -138,30 +140,41 @@ async function processInput(key) {
         }
     } else if (key === KEY_ENTER) {
         if (input.length === WORD_LENGTH && isRealWord) {
-            attempts.push(input);
+            const inputRow = attemptContainer.querySelector(".input-row");
+            const nextRow = inputRow.nextElementSibling;
+            const result = await checkAnswer(input);
+            displayResult(inputRow, result);
             input = "";
-            inputOutputs.forEach((i) => {
-                i.innerText = "";
-            });
-            displayAttempt(attempts);
+            inputRow.classList.remove("input-row");
+            if (result === WORD_CORRECT) {
+                const inputLetters = inputRow.querySelectorAll(".attempt-letter");
+                inputLetters.forEach((letter) => {
+                    letter.classList.add("bounce");
+                });
+                gameOver(true);
+            } else {
+                if (nextRow) {
+                    nextRow.classList.add("input-row");
+                } else {
+                    gameOver(false);
+                }
+            }
         }
     } else if (isAlpha(key) && input.length < WORD_LENGTH) {
         input += key.toUpperCase();
     }
 
-    const inputContainer = $q(".input-container");
-    const enterKey = $q(".key[value='Enter']");
-    if(input.length === WORD_LENGTH) {
+    const enterKey = keyboardContainer.querySelector("button[value='Enter']");
+    if (input.length === WORD_LENGTH) {
         isRealWord = await checkWord(input);
-
-        if(isRealWord) {
-            enterKey.removeAttribute("disabled")
+        if (isRealWord) {
+            enterKey.removeAttribute("disabled");
         } else {
-            inputContainer.classList.add("shake");
-            setTimeout(() => inputContainer.classList.remove("shake"),1000);
+            const inputRow = attemptContainer.querySelector(".input-row");
+            inputRow.classList.add("shake");
+            setTimeout(() => inputRow.classList.remove("shake"), 1000);
             enterKey.setAttribute("disabled", true);
         }
-
     } else {
         isRealWord = false;
         enterKey.setAttribute("disabled", true);
@@ -173,32 +186,21 @@ async function processInput(key) {
 function checkWord(word) {
     return fetch(`${DICTIONARY_API_URL}${word}`)
         .then((resp) => resp.json())
-        .then(({title}) => !(title && title === "No Definitions Found"));
+        .then(({ title }) => !(title && title === "No Definitions Found"));
 }
 
 function displayInput(input) {
-    for (let i = 0; i < WORD_LENGTH; i++) {
-        const inputOutput = inputOutputs[i];
-        const hint = inputOutput.dataset.hint;
-        const defaultInput = INPUT_HINTS && hint ? `<span class="hint">${hint}</span>` : "";
-        inputOutput.innerHTML = input[i] || defaultInput;
-        input[i] && hint && inputOutput.innerHTML === hint
-            ? inputOutput.classList.add("g")
-            : inputOutput.classList.remove("g")
-        ;
-    }
+    const inputLetters = attemptContainer.querySelectorAll(".input-row .attempt-letter");
+    inputLetters.forEach((inputLetter, i) => {
+        inputLetter.innerHTML = input[i] || "";
+    });
 }
 
-async function displayAttempt(attempts) {
-    const newAttempt = attempts.length - 1;
-    let itemIndex = newAttempt * WORD_LENGTH;
-    let result = await checkAnswer(attempts, newAttempt);
-    for (let i = 0; i < WORD_LENGTH; i++) {
-        attemptOutputs[itemIndex].innerText = attempts[newAttempt][i];
-        attemptOutputs[itemIndex].classList.add(result[i]);
-        displayKeyboardHints(attempts[newAttempt][i], result[i]);
-        itemIndex++;
-    }
+function displayResult(inputRow, result) {
+    const attemptLetters = inputRow.querySelectorAll(".attempt-letter");
+    attemptLetters.forEach((attemptLetter, i) => {
+        attemptLetter.classList.add(result[i]);
+    });
 }
 
 function displayKeyboardHints(letter, result) {
@@ -214,55 +216,33 @@ function displayKeyboardHints(letter, result) {
 }
 
 function revealAnswer(answer) {
-    const revealElement = $q(".reveal");
-    revealElement.classList.add("padded");
-    revealElement.classList.add(winner ? LETTER_CORRECT : LETTER_UNUSED);
-    revealElement.innerHTML = `<h2>${answer}</h2>`;
-
-    $q(".input-container").style.display = "none";
-    $q(".keyboard").style.display = "none";
+    revealContainer.classList.add("padded");
+    revealContainer.classList.add(winner ? LETTER_CORRECT : LETTER_UNUSED);
+    revealContainer.innerHTML = `<h2>${answer}</h2>`;
 }
 
 function buildAttemptGrid() {
-    const gridItemTemplate = $q("#grid-item");
-    const gridContainer = $q(".grid-container");
-
-    const gridItemTotal = WORD_LENGTH * MAX_ATTEMPTS;
-    for (let i = 0; i < gridItemTotal; i++) {
-        const itemClone = gridItemTemplate.content.cloneNode(true);
-        gridContainer.appendChild(itemClone);
+    let grid = "";
+    for (let r = 0; r < MAX_ATTEMPTS; r++) {
+        grid += `<div class="attempt-row ${r === 0 ? "input-row" : ""}">`;
+        for (let l = 0; l < WORD_LENGTH; l++) {
+            grid += `<div class="attempt-letter"></div>`;
+        }
+        grid += `</div>`;
     }
-}
-
-function buildInputGrid() {
-    const gridItemTemplate = $q("#grid-item");
-    const inputContainer = $q(".input-container");
-
-    for (let i = 0; i < WORD_LENGTH; i++) {
-        const itemClone = gridItemTemplate.content.cloneNode(true);
-        inputContainer.appendChild(itemClone);
-    }
+    attemptContainer.innerHTML = grid;
 }
 
 function buildKeyboard() {
-    const keyRowTemplate = $q("#key-row");
-    const keyButtonTemplate = $q("#key-button");
-    const keyboardContainer = $q(".keyboard");
+    const keyRowTemplate = (buttons) => `<div class="row">${buttons}</div>`;
+    const keyButtonTemplate = ([value, text]) => `<button class="key" value="${value}">${text}</button>`;
 
-    const rows = KEYBOARD_BUTTONS.length;
-    for (let r = 0; r < rows; r++) {
-        const rowClone = keyRowTemplate.content.cloneNode(true);
-        const row = rowClone.querySelector(".row");
-        const buttons = KEYBOARD_BUTTONS[r].length;
-        for (let b = 0; b < buttons; b++) {
-            const [val, txt] = KEYBOARD_BUTTONS[r][b];
-            const buttonClone = keyButtonTemplate.content.cloneNode(true);
-            const button = buttonClone.querySelector(".key");
-            button.value = val;
-            button.innerHTML = txt;
-            val === "Enter" && button.setAttribute("disabled", true);
-            row.appendChild(buttonClone);
-        }
-        keyboardContainer.appendChild(rowClone);
-    }
+    keyboardContainer.innerHTML = KEYBOARD_BUTTONS.reduce((rows, row) => (rows += keyRowTemplate(row.reduce((buttons, button) => (buttons += keyButtonTemplate(button)), ""))), "");
+
+    keyboardContainer.querySelector("button[value='Enter']").setAttribute("disabled", "disabled");
+}
+
+function gameOver(winner = false) {
+    keyboardContainer.remove();
+    if (winner) revealContainer.remove();
 }
