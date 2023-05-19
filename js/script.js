@@ -77,7 +77,6 @@ const checkAnswer = ((answerPromise) => {
         [...attempt].forEach((_, i) => {
             if (answer[i] === attempt[i]) {
                 result = result.slice(0, i) + LETTER_CORRECT + result.slice(i + 1);
-                // inputOutputs[i].dataset["hint"] = answer[i];
                 counts[attempt[i]] -= 1;
             }
         });
@@ -200,6 +199,7 @@ function displayResult(inputRow, result) {
     const attemptLetters = inputRow.querySelectorAll(".attempt-letter");
     attemptLetters.forEach((attemptLetter, i) => {
         attemptLetter.classList.add(result[i]);
+        displayKeyboardHints(input[i], result[i]);
     });
 }
 
