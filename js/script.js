@@ -102,7 +102,7 @@ const checkAnswer = ((answerPromise) => {
 
         return result;
     };
-})(testWord()); // getWord()
+})(getWord()); // testWord()
 
 async function getWord() {
     const res = await fetch(WORD_API_URL);
