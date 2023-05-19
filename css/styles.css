@@ -170,6 +170,11 @@ main {
     }
 }
 
+#outro {
+    margin: 2rem;
+    text-align: center;
+}
+
 .debug {
     outline: 3px solid red;
 }
