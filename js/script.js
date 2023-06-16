@@ -12,8 +12,6 @@ const LETTER_WRONG = "y";
 const LETTER_CORRECT = "g";
 const WORD_UNUSED = Array(WORD_LENGTH).fill(LETTER_UNUSED).join("");
 const WORD_CORRECT = Array(WORD_LENGTH).fill(LETTER_CORRECT).join("");
-const WORD_API_URL = `https://random-word-api.vercel.app/api?words=1&length=${WORD_LENGTH}&type=uppercase`;
-const DICTIONARY_API_URL = `https://api.dictionaryapi.dev/api/v2/entries/en/`;
 const KEYBOARD_BUTTONS = [
     [
         ["Q", "Q"],
@@ -56,65 +54,23 @@ const isAlpha = (input) => /^[a-zA-Z]$/.test(input);
 const attemptContainer = $q("#attempt-container");
 const revealContainer = $q("#reveal");
 const keyboardContainer = $q("#keyboard");
-
-buildAttemptGrid();
-buildKeyboard();
-
+const words = {};
 const attempts = [];
 let winner = false;
 let input = "";
 let isRealWord = false;
 
-const checkAnswer = ((answerPromise) => {
-    return async (attempt) => {
-        const answer = await answerPromise;
-        const counts = {};
-        let result = WORD_UNUSED;
-        [...answer].forEach((letter) => {
-            if (counts[letter]) counts[letter] += 1;
-            else counts[letter] = 1;
-        });
-        [...attempt].forEach((_, i) => {
-            if (answer[i] === attempt[i]) {
-                result = result.slice(0, i) + LETTER_CORRECT + result.slice(i + 1);
-                counts[attempt[i]] -= 1;
-            }
-        });
-        [...attempt].forEach((_, i) => {
-            if (answer.includes(attempt[i]) && counts[attempt[i]] > 0 && result[i] !== LETTER_CORRECT) {
-                result = result.slice(0, i) + LETTER_WRONG + result.slice(i + 1);
-                counts[attempt[i]] -= 1;
-            }
-        });
-
-        const inputRow = attemptContainer.querySelector(".input-row");
-        const attemptLetters = inputRow.querySelectorAll(".attempt-letter");
-        attemptLetters.forEach((attemptLetter, i) => {
-            attemptLetter.classList.add(result[i]);
-        });
-
-        const nextRow = inputRow.nextElementSibling;
-
-        if (result !== WORD_CORRECT && !nextRow) {
-            revealAnswer(answer);
-        }
-
-        return result;
-    };
-})(getWord()); // testWord()
-
-async function getWord() {
-    const res = await fetch(WORD_API_URL);
-    const json = await res.json();
-    return json[0].toUpperCase();
-}
-
-function testWord() {
-    const word = "ERASE";
-    return new Promise((res, rej) => {
-        res(word);
+Promise.all([getGuesses(), getSolutions()])
+    .then(([guesses, solutions]) => {
+        const answer = getAnswer(solutions);
+        const wordList = [...solutions, ...guesses];
+        words.answer = answer;
+        words.wordList = wordList;
+    })
+    .finally(() => {
+        buildAttemptGrid();
+        buildKeyboard();
     });
-}
 
 // physical keyboard input listener
 window.addEventListener("keydown", (evt) => {
@@ -141,7 +97,7 @@ async function processInput(key) {
         if (input.length === WORD_LENGTH && isRealWord) {
             const inputRow = attemptContainer.querySelector(".input-row");
             const nextRow = inputRow.nextElementSibling;
-            const result = await checkAnswer(input);
+            const result = checkAnswer(input);
             displayResult(inputRow, result);
             input = "";
             inputRow.classList.remove("input-row");
@@ -165,7 +121,7 @@ async function processInput(key) {
 
     const enterKey = keyboardContainer.querySelector("button[value='Enter']");
     if (input.length === WORD_LENGTH) {
-        isRealWord = await checkWord(input);
+        isRealWord = checkWord(input);
         if (isRealWord) {
             enterKey.removeAttribute("disabled");
         } else {
@@ -182,10 +138,44 @@ async function processInput(key) {
     displayInput(input);
 }
 
+function checkAnswer(attempt) {
+    const answer = words.answer;
+    const counts = {};
+    let result = WORD_UNUSED;
+    [...answer].forEach((letter) => {
+        if (counts[letter]) counts[letter] += 1;
+        else counts[letter] = 1;
+    });
+    [...attempt].forEach((_, i) => {
+        if (answer[i] === attempt[i]) {
+            result = result.slice(0, i) + LETTER_CORRECT + result.slice(i + 1);
+            counts[attempt[i]] -= 1;
+        }
+    });
+    [...attempt].forEach((_, i) => {
+        if (answer.includes(attempt[i]) && counts[attempt[i]] > 0 && result[i] !== LETTER_CORRECT) {
+            result = result.slice(0, i) + LETTER_WRONG + result.slice(i + 1);
+            counts[attempt[i]] -= 1;
+        }
+    });
+
+    const inputRow = attemptContainer.querySelector(".input-row");
+    const attemptLetters = inputRow.querySelectorAll(".attempt-letter");
+    attemptLetters.forEach((attemptLetter, i) => {
+        attemptLetter.classList.add(result[i]);
+    });
+
+    const nextRow = inputRow.nextElementSibling;
+
+    if (result !== WORD_CORRECT && !nextRow) {
+        revealAnswer(answer);
+    }
+
+    return result;
+}
+
 function checkWord(word) {
-    return fetch(`${DICTIONARY_API_URL}${word}`)
-        .then((resp) => resp.json())
-        .then(({ title }) => !(title && title === "No Definitions Found"));
+    return words.wordList.includes(word);
 }
 
 function displayInput(input) {
@@ -245,4 +235,25 @@ function buildKeyboard() {
 function gameOver(winner = false) {
     keyboardContainer.remove();
     if (winner) revealContainer.remove();
+}
+
+function getAnswer(solutions) {
+    const rand = random(0, solutions.length - 1);
+    return solutions[rand];
+}
+
+function getGuesses() {
+    return fetch("../assets/valid_guesses.json")
+        .then((res) => res.json())
+        .then((words) => words.map((word) => word.toUpperCase()));
+}
+
+function getSolutions() {
+    return fetch("../assets/valid_solutions.json")
+        .then((res) => res.json())
+        .then((words) => words.map((word) => word.toUpperCase()));
+}
+
+function random(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
 }
