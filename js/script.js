@@ -88,7 +88,7 @@ keyboardContainer.querySelectorAll("button.key").forEach((key) => {
     });
 });
 
-async function processInput(key) {
+function processInput(key) {
     if (key === KEY_BACKSPACE) {
         if (input.length > 0) {
             input = input.slice(0, -1);
@@ -242,14 +242,14 @@ function getAnswer(solutions) {
     return solutions[rand];
 }
 
-function getGuesses() {
-    return fetch("../assets/valid_guesses.json")
+async function getGuesses() {
+    return await fetch("./assets/valid_guesses.json")
         .then((res) => res.json())
         .then((words) => words.map((word) => word.toUpperCase()));
 }
 
-function getSolutions() {
-    return fetch("../assets/valid_solutions.json")
+async function getSolutions() {
+    return await fetch("./assets/valid_solutions.json")
         .then((res) => res.json())
         .then((words) => words.map((word) => word.toUpperCase()));
 }
