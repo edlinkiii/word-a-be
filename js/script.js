@@ -14,7 +14,6 @@ const WORD_UNUSED = Array(WORD_LENGTH).fill(LETTER_UNUSED).join(``);
 const WORD_CORRECT = Array(WORD_LENGTH).fill(LETTER_CORRECT).join(``);
 const URL_GUESSES = `./assets/valid_guesses.json`;
 const URL_SOLUTIONS = `./assets/valid_solutions.json`;
-const URL_NY_TIMES = `https://www.nytimes.com/svc/wordle/v2/${getIsoDate()}.json`;
 
 const KEYBOARD_BUTTONS = [
     [
@@ -259,9 +258,13 @@ async function getSolutions() {
 }
 
 // getNYTimesAnswer();
-async function getNYTimesAnswer() {
-    return await fetch(URL_NY_TIMES).then((res) => res.json()).then(({ solution }) => console.warn(solution));
-}
+// async function getNYTimesAnswer() {
+//     const URL_NY_TIMES = `https://www.nytimes.com/svc/wordle/v2/${getIsoDate()}.json`;
+//     return await fetch(URL_NY_TIMES, { mode: "no-cors" })
+//     .then((res) => res.json())
+//     .then((json) => console.warn(json))
+//     .catch((err) => console.error(err));
+// }
 
 function random(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
