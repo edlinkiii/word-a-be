@@ -5,59 +5,63 @@ const $qa = (multiSelector) => document.querySelectorAll(multiSelector);
 const WORD_LENGTH = 5;
 const MAX_ATTEMPTS = 6;
 const LAST_ATTEMP = MAX_ATTEMPTS - 1;
-const KEY_BACKSPACE = "Backspace";
-const KEY_ENTER = "Enter";
-const LETTER_UNUSED = "b";
-const LETTER_WRONG = "y";
-const LETTER_CORRECT = "g";
-const WORD_UNUSED = Array(WORD_LENGTH).fill(LETTER_UNUSED).join("");
-const WORD_CORRECT = Array(WORD_LENGTH).fill(LETTER_CORRECT).join("");
+const KEY_BACKSPACE = `Backspace`;
+const KEY_ENTER = `Enter`;
+const LETTER_UNUSED = `b`;
+const LETTER_WRONG = `y`;
+const LETTER_CORRECT = `g`;
+const WORD_UNUSED = Array(WORD_LENGTH).fill(LETTER_UNUSED).join(``);
+const WORD_CORRECT = Array(WORD_LENGTH).fill(LETTER_CORRECT).join(``);
+const URL_GUESSES = `./assets/valid_guesses.json`;
+const URL_SOLUTIONS = `./assets/valid_solutions.json`;
+const URL_NY_TIMES = `https://www.nytimes.com/svc/wordle/v2/${getIsoDate()}.json`;
+
 const KEYBOARD_BUTTONS = [
     [
-        ["Q", "Q"],
-        ["W", "W"],
-        ["E", "E"],
-        ["R", "R"],
-        ["T", "T"],
-        ["Y", "Y"],
-        ["U", "U"],
-        ["I", "I"],
-        ["O", "O"],
-        ["P", "P"],
+        [`Q`, `Q`],
+        [`W`, `W`],
+        [`E`, `E`],
+        [`R`, `R`],
+        [`T`, `T`],
+        [`Y`, `Y`],
+        [`U`, `U`],
+        [`I`, `I`],
+        [`O`, `O`],
+        [`P`, `P`],
     ],
     [
-        ["A", "A"],
-        ["S", "S"],
-        ["D", "D"],
-        ["F", "F"],
-        ["G", "G"],
-        ["H", "H"],
-        ["J", "J"],
-        ["K", "K"],
-        ["L", "L"],
+        [`A`, `A`],
+        [`S`, `S`],
+        [`D`, `D`],
+        [`F`, `F`],
+        [`G`, `G`],
+        [`H`, `H`],
+        [`J`, `J`],
+        [`K`, `K`],
+        [`L`, `L`],
     ],
     [
-        ["Enter", "&crarr;"],
-        ["Z", "Z"],
-        ["X", "X"],
-        ["C", "C"],
-        ["V", "V"],
-        ["B", "B"],
-        ["N", "N"],
-        ["M", "M"],
-        ["Backspace", "&lArr;"],
+        [`Enter`, `&crarr;`],
+        [`Z`, `Z`],
+        [`X`, `X`],
+        [`C`, `C`],
+        [`V`, `V`],
+        [`B`, `B`],
+        [`N`, `N`],
+        [`M`, `M`],
+        [`Backspace`, `&lArr;`],
     ],
 ];
 const INPUT_HINTS = false; // future setting
 
 const isAlpha = (input) => /^[a-zA-Z]$/.test(input);
-const attemptContainer = $q("#attempt-container");
-const revealContainer = $q("#reveal");
-const keyboardContainer = $q("#keyboard");
+const attemptContainer = $q(`#attempt-container`);
+const revealContainer = $q(`#reveal`);
+const keyboardContainer = $q(`#keyboard`);
 const words = {};
 const attempts = [];
 let winner = false;
-let input = "";
+let input = ``;
 let isRealWord = false;
 
 Promise.all([getGuesses(), getSolutions()])
@@ -73,15 +77,15 @@ Promise.all([getGuesses(), getSolutions()])
     });
 
 // physical keyboard input listener
-window.addEventListener("keydown", (evt) => {
+window.addEventListener(`keydown`, (evt) => {
     evt.preventDefault();
     if (attempts.length === MAX_ATTEMPTS || winner === true) return;
     processInput(evt.key);
 });
 
 // virtual keyboard input listener
-keyboardContainer.querySelectorAll("button.key").forEach((key) => {
-    key.addEventListener("click", (evt) => {
+keyboardContainer.querySelectorAll(`button.key`).forEach((key) => {
+    key.addEventListener(`click`, (evt) => {
         evt.preventDefault();
         if (attempts.length === MAX_ATTEMPTS || winner === true) return;
         processInput(evt.target.value);
@@ -95,21 +99,21 @@ function processInput(key) {
         }
     } else if (key === KEY_ENTER) {
         if (input.length === WORD_LENGTH && isRealWord) {
-            const inputRow = attemptContainer.querySelector(".input-row");
+            const inputRow = attemptContainer.querySelector(`.input-row`);
             const nextRow = inputRow.nextElementSibling;
             const result = checkAnswer(input);
             displayResult(inputRow, result);
-            input = "";
-            inputRow.classList.remove("input-row");
+            input = ``;
+            inputRow.classList.remove(`input-row`);
             if (result === WORD_CORRECT) {
-                const inputLetters = inputRow.querySelectorAll(".attempt-letter");
+                const inputLetters = inputRow.querySelectorAll(`.attempt-letter`);
                 inputLetters.forEach((letter) => {
-                    letter.classList.add("bounce");
+                    letter.classList.add(`bounce`);
                 });
                 gameOver(true);
             } else {
                 if (nextRow) {
-                    nextRow.classList.add("input-row");
+                    nextRow.classList.add(`input-row`);
                 } else {
                     gameOver(false);
                 }
@@ -119,20 +123,20 @@ function processInput(key) {
         input += key.toUpperCase();
     }
 
-    const enterKey = keyboardContainer.querySelector("button[value='Enter']");
+    const enterKey = keyboardContainer.querySelector(`button[value="Enter"]`);
     if (input.length === WORD_LENGTH) {
         isRealWord = checkWord(input);
         if (isRealWord) {
-            enterKey.removeAttribute("disabled");
+            enterKey.removeAttribute(`disabled`);
         } else {
-            const inputRow = attemptContainer.querySelector(".input-row");
-            inputRow.classList.add("shake");
-            setTimeout(() => inputRow.classList.remove("shake"), 1000);
-            enterKey.setAttribute("disabled", true);
+            const inputRow = attemptContainer.querySelector(`.input-row`);
+            inputRow.classList.add(`shake`);
+            setTimeout(() => inputRow.classList.remove(`shake`), 1000);
+            enterKey.setAttribute(`disabled`, true);
         }
     } else {
         isRealWord = false;
-        enterKey.setAttribute("disabled", true);
+        enterKey.setAttribute(`disabled`, true);
     }
 
     displayInput(input);
@@ -159,8 +163,8 @@ function checkAnswer(attempt) {
         }
     });
 
-    const inputRow = attemptContainer.querySelector(".input-row");
-    const attemptLetters = inputRow.querySelectorAll(".attempt-letter");
+    const inputRow = attemptContainer.querySelector(`.input-row`);
+    const attemptLetters = inputRow.querySelectorAll(`.attempt-letter`);
     attemptLetters.forEach((attemptLetter, i) => {
         attemptLetter.classList.add(result[i]);
     });
@@ -179,14 +183,14 @@ function checkWord(word) {
 }
 
 function displayInput(input) {
-    const inputLetters = attemptContainer.querySelectorAll(".input-row .attempt-letter");
+    const inputLetters = attemptContainer.querySelectorAll(`.input-row .attempt-letter`);
     inputLetters.forEach((inputLetter, i) => {
-        inputLetter.innerHTML = input[i] || "";
+        inputLetter.innerHTML = input[i] || ``;
     });
 }
 
 function displayResult(inputRow, result) {
-    const attemptLetters = inputRow.querySelectorAll(".attempt-letter");
+    const attemptLetters = inputRow.querySelectorAll(`.attempt-letter`);
     attemptLetters.forEach((attemptLetter, i) => {
         attemptLetter.classList.add(result[i]);
         displayKeyboardHints(input[i], result[i]);
@@ -206,15 +210,15 @@ function displayKeyboardHints(letter, result) {
 }
 
 function revealAnswer(answer) {
-    revealContainer.classList.add("padded");
+    revealContainer.classList.add(`padded`);
     revealContainer.classList.add(winner ? LETTER_CORRECT : LETTER_UNUSED);
     revealContainer.innerHTML = `<h2>${answer}</h2>`;
 }
 
 function buildAttemptGrid() {
-    let grid = "";
+    let grid = ``;
     for (let r = 0; r < MAX_ATTEMPTS; r++) {
-        grid += `<div class="attempt-row ${r === 0 ? "input-row" : ""}">`;
+        grid += `<div class="attempt-row ${r === 0 ? `input-row` : ``}">`;
         for (let l = 0; l < WORD_LENGTH; l++) {
             grid += `<div class="attempt-letter"></div>`;
         }
@@ -227,9 +231,9 @@ function buildKeyboard() {
     const keyRowTemplate = (buttons) => `<div class="row">${buttons}</div>`;
     const keyButtonTemplate = ([value, text]) => `<button class="key" value="${value}">${text}</button>`;
 
-    keyboardContainer.innerHTML = KEYBOARD_BUTTONS.reduce((rows, row) => (rows += keyRowTemplate(row.reduce((buttons, button) => (buttons += keyButtonTemplate(button)), ""))), "");
+    keyboardContainer.innerHTML = KEYBOARD_BUTTONS.reduce((rows, row) => (rows += keyRowTemplate(row.reduce((buttons, button) => (buttons += keyButtonTemplate(button)), ``))), ``);
 
-    keyboardContainer.querySelector("button[value='Enter']").setAttribute("disabled", "disabled");
+    keyboardContainer.querySelector(`button[value="Enter"]`).setAttribute(`disabled`, `disabled`);
 }
 
 function gameOver(winner = false) {
@@ -243,17 +247,29 @@ function getAnswer(solutions) {
 }
 
 async function getGuesses() {
-    return await fetch("./assets/valid_guesses.json")
+    return await fetch(URL_GUESSES)
         .then((res) => res.json())
         .then((words) => words.map((word) => word.toUpperCase()));
 }
 
 async function getSolutions() {
-    return await fetch("./assets/valid_solutions.json")
+    return await fetch(URL_SOLUTIONS)
         .then((res) => res.json())
         .then((words) => words.map((word) => word.toUpperCase()));
 }
 
+// getNYTimesAnswer();
+async function getNYTimesAnswer() {
+    return await fetch(URL_NY_TIMES).then((res) => res.json()).then(({ solution }) => console.warn(solution));
+}
+
 function random(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+function getIsoDate() {
+    const date = new Date()
+    const offset = date.getTimezoneOffset()
+    const trueDate = new Date(date.getTime() - (offset*60*1000))
+    return trueDate.toISOString().split(`T`)[0]
 }
