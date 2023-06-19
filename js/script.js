@@ -73,23 +73,26 @@ Promise.all([getGuesses(), getSolutions()])
     .finally(() => {
         buildAttemptGrid();
         buildKeyboard();
+        inputListeners();
     });
 
-// physical keyboard input listener
-window.addEventListener(`keydown`, (evt) => {
-    evt.preventDefault();
-    if (attempts.length === MAX_ATTEMPTS || winner === true) return;
-    processInput(evt.key);
-});
-
-// virtual keyboard input listener
-keyboardContainer.querySelectorAll(`button.key`).forEach((key) => {
-    key.addEventListener(`click`, (evt) => {
+function inputListeners() {
+    // physical keyboard input listener
+    window.addEventListener(`keydown`, (evt) => {
         evt.preventDefault();
         if (attempts.length === MAX_ATTEMPTS || winner === true) return;
-        processInput(evt.target.value);
+        processInput(evt.key);
     });
-});
+
+    // virtual keyboard input listener
+    keyboardContainer.querySelectorAll(`button.key`).forEach((key) => {
+        key.addEventListener(`click`, (evt) => {
+            evt.preventDefault();
+            if (attempts.length === MAX_ATTEMPTS || winner === true) return;
+            processInput(evt.target.value);
+        });
+    });
+}
 
 function processInput(key) {
     if (key === KEY_BACKSPACE) {
@@ -257,6 +260,17 @@ async function getSolutions() {
         .then((words) => words.map((word) => word.toUpperCase()));
 }
 
+function random(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+// function getIsoDate() {
+//     const date = new Date()
+//     const offset = date.getTimezoneOffset()
+//     const trueDate = new Date(date.getTime() - (offset*60*1000))
+//     return trueDate.toISOString().split(`T`)[0]
+// }
+
 // getNYTimesAnswer();
 // async function getNYTimesAnswer() {
 //     const URL_NY_TIMES = `https://www.nytimes.com/svc/wordle/v2/${getIsoDate()}.json`;
@@ -265,14 +279,3 @@ async function getSolutions() {
 //     .then((json) => console.warn(json))
 //     .catch((err) => console.error(err));
 // }
-
-function random(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min);
-}
-
-function getIsoDate() {
-    const date = new Date()
-    const offset = date.getTimezoneOffset()
-    const trueDate = new Date(date.getTime() - (offset*60*1000))
-    return trueDate.toISOString().split(`T`)[0]
-}
