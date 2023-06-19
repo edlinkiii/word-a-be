@@ -72,7 +72,6 @@ Promise.all([getGuesses(), getSolutions()])
     })
     .finally(() => {
         buildAttemptGrid();
-        buildKeyboard();
         inputListeners();
     });
 
@@ -84,14 +83,27 @@ function inputListeners() {
         processInput(evt.key);
     });
 
-    // virtual keyboard input listener
-    keyboardContainer.querySelectorAll(`button.key`).forEach((key) => {
-        key.addEventListener(`click`, (evt) => {
-            evt.preventDefault();
-            if (attempts.length === MAX_ATTEMPTS || winner === true) return;
-            processInput(evt.target.value);
+    // mobile keyboard
+    if ("virtualKeyboard" in navigator && navigator?.userAgentData?.mobile) {
+        const body = document.querySelector("body");
+        body.setAttribute("contenteditable", "true");
+        body.setAttribute("virtualkeyboardpolicy","manual");
+        navigator.virtualKeyboard.overlaysContent = true;
+        document.querySelector("main").addEventListener("click", () => {
+            navigator.virtualKeyboard.show();
+        })
+    } else {
+        buildKeyboard();
+
+        // virtual keyboard input listener
+        keyboardContainer.querySelectorAll(`button.key`).forEach((key) => {
+            key.addEventListener(`click`, (evt) => {
+                evt.preventDefault();
+                if (attempts.length === MAX_ATTEMPTS || winner === true) return;
+                processInput(evt.target.value);
+            });
         });
-    });
+    }
 }
 
 function processInput(key) {
