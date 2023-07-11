@@ -84,15 +84,15 @@ function inputListeners() {
     });
 
     // mobile keyboard
-    if ("virtualKeyboard" in navigator && navigator?.userAgentData?.mobile) {
-        const body = document.querySelector("body");
-        body.setAttribute("contenteditable", "true");
-        body.setAttribute("virtualkeyboardpolicy","manual");
-        navigator.virtualKeyboard.overlaysContent = true;
-        document.querySelector("main").addEventListener("click", () => {
-            navigator.virtualKeyboard.show();
-        })
-    } else {
+    // if ("virtualKeyboard" in navigator && navigator?.userAgentData?.mobile) {
+    //     const body = document.querySelector("body");
+    //     body.setAttribute("contenteditable", "true");
+    //     body.setAttribute("virtualkeyboardpolicy","manual");
+    //     navigator.virtualKeyboard.overlaysContent = true;
+    //     document.querySelector("main").addEventListener("click", () => {
+    //         navigator.virtualKeyboard.show();
+    //     })
+    // } else {
         buildKeyboard();
 
         // virtual keyboard input listener
@@ -103,7 +103,7 @@ function inputListeners() {
                 processInput(evt.target.value);
             });
         });
-    }
+    // }
 }
 
 function processInput(key) {
